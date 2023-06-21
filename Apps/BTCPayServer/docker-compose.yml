@@ -1,4 +1,6 @@
 ---
+version: '3.9'
+
 name: btcpayserver
 services:
   nginx:
@@ -22,7 +24,7 @@ services:
       DEFAULT_HOST: none
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
+      - /DATA/AppData/$AppID/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
       - nginx_conf:/etc/nginx/conf.d
       - nginx_vhost:/etc/nginx/vhost.d
       - nginx_html:/usr/share/nginx/html
@@ -74,7 +76,6 @@ services:
     volumes:
       - btcpay_datadir:/datadir
       - nbxplorer_datadir:/root/.nbxplorer
-      - /share/homes/admin/.ssh/authorized_keys:abc
       - btcpay_pluginsdir:/root/.btcpayserver/Plugins
       - clightning_bitcoin_datadir:/etc/clightning_bitcoin
       - clightning_bitcoin_spark:/etc/clightning_bitcoin_spark
@@ -117,7 +118,7 @@ services:
       - 43782
       - 39388
     volumes:
-      - bitcoin_datadir:/data
+      - /DATA/media/blockchains/bitcoin:/data
       - bitcoin_wallet_datadir:/walletdata
       - tor_datadir:/home/tor/.tor
     links:
@@ -142,7 +143,7 @@ services:
       - postgres
     volumes:
       - nbxplorer_datadir:/datadir
-      - bitcoin_datadir:/root/.bitcoin
+      - /DATA/media/blockchains/bitcoin:/root/.bitcoin
   clightning_bitcoin:
     image: btcpayserver/lightning:v23.02-1
     container_name: btcpayserver_clightning_bitcoin
@@ -167,7 +168,7 @@ services:
       LIGHTNINGD_HIDDENSERVICE_HOSTNAME_FILE: /var/lib/tor/hidden_services/c-lightning/hostname
     volumes:
       - clightning_bitcoin_datadir:/root/.lightning
-      - bitcoin_datadir:/etc/bitcoin
+      - /DATA/media/blockchains/bitcoin:/etc/bitcoin
       - nbxplorer_datadir:/root/.nbxplorer
       - tor_servicesdir:/var/lib/tor/hidden_services
     ports:
@@ -215,7 +216,7 @@ services:
       - clightning_bitcoin
     volumes:
       - clightning_bitcoin_datadir:/root/.lightning
-      - bitcoin_datadir:/etc/bitcoin
+      - /DATA/media/blockchains/bitcoin:/etc/bitcoin
       - clightning_bitcoin_rest_certsdir:/usr/src/app/certs
       - nbxplorer_datadir:/root/.nbxplorer
     expose:
@@ -235,7 +236,7 @@ services:
       LOGOUT_REDIRECT_LINK: /server/services
     volumes:
       - clightning_bitcoin_datadir:/root/.lightning
-      - bitcoin_datadir:/etc/bitcoin
+      - /DATA/media/blockchains/bitcoin:/etc/bitcoin
       - clightning_bitcoin_rtl_datadir:/data
       - clightning_bitcoin_rest_certsdir:/etc/clightning_bitcoin_rest_certs
     expose:
@@ -262,7 +263,7 @@ services:
     container_name: tor-gen
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./torrc.tmpl:/etc/docker-gen/templates/torrc.tmpl:ro
+      - /share/media/_btcpayserver/torrc.tmpl:/etc/docker-gen/templates/torrc.tmpl:ro
       - tor_torrcdir:/usr/local/etc/tor
     entrypoint: /usr/local/bin/docker-gen -notify-sighup tor -watch -wait 5s:30s /etc/docker-gen/templates/torrc.tmpl /usr/local/etc/tor/torrc-2
     links:
@@ -298,7 +299,6 @@ volumes:
   nginx_certs:
   btcpay_datadir:
   btcpay_pluginsdir:
-  bitcoin_datadir:
   bitcoin_wallet_datadir:
   clightning_bitcoin_datadir:
   clightning_bitcoin_spark:
@@ -322,11 +322,11 @@ x-casaos:
   tagline:
     en_us: Accept Bitcoin payments. Free, open-source & self-hosted, Bitcoin payment processor.
   screenshot_link:
-    - ./home_screenshot.png
+    - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/BTCPayServer/home_screenshot.png
   developer: BTCPayServer
-  author: BTCPayServer
-  icon: ./icon.png
-  thumbnail: ./thumbnail.png
+  author: f4bio
+  icon: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/BTCPayServer/icon.png
+  thumbnail: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/BTCPayServer/thumbnail.png
   title:
     en_us: BTCPayServer
   category: Utilities
