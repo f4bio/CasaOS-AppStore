@@ -1,0 +1,77 @@
+---
+name: bitcoind
+services:
+  app:
+    image: lncm/bitcoind:v25.0
+    restart: unless-stopped
+    environment:
+      - PGID=$PGID
+      - PUID=$PUID
+      - TZ=$TZ
+    x-casaos:
+      volumes:
+        - container: /data/.bitcoin
+          description:
+            en_us: All service data (including the blockchain) is stored here
+      ports:
+        # REST interface
+        - container: "58080"
+          description:
+            en_us: REST interface
+        # P2P network (mainnet, testnet & regnet respectively)
+        - container: "8333"
+          description:
+            en_us: P2P network (mainnet)
+        - container: "18333"
+          description:
+            en_us: P2P network (testnet)
+        - container: "18444"
+          description:
+            en_us: P2P network (regnet)
+        # RPC interface (mainnet, testnet & regnet respectively)
+        - container: "8332"
+          description:
+            en_us: RPC interface (mainnet)
+        - container: "18332"
+          description:
+            en_us: RPC interface (testnet)
+        - container: "18443"
+          description:
+            en_us: RPC interface (regnet)
+    ports:
+      # REST interface
+      - "58080:8080"
+      # P2P network (mainnet, testnet & regnet respectively)
+      - "8333:8333"
+      - "18333:18333"
+      - "18444:18444"
+      # RPC interface (mainnet, testnet & regnet respectively)
+      - "8332:8332"
+      - "18332:18332"
+      - "18443:18443"
+      # ZMQ ports (for transactions & blocks respectively)
+      - "28332:28332"
+      - "28333:28333"
+    volumes:
+      - /DATA/AppData/$AppID/data:/data/.bitcoin
+    entrypoint: ["bitcoind", "--testnet"]
+x-casaos:
+  architectures:
+    - amd64
+    - arm
+    - arm64
+  main: app
+  author: f4bio
+  description:
+    en_us: "Bitcoin Core is a reference client that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. Learn more about Bitcoin Core on the Bitcoin Developer Reference docs."
+  tagline:
+    en_us: "Bitcoin Core is an open source project which maintains and releases Bitcoin client software called >>Bitcoin Core<<."
+  screenshot_link:
+    - https://bitcoincore.org/assets/images/bitcoin_core_logo_colored_reversed.png
+  developer: Bitcoind
+  icon: https://cdn.jsdelivr.net/gh/f4bio/CasaOS-AppStore@develop/Apps/Bitcoind/icon.png
+  thumbnail: https://cdn.jsdelivr.net/gh/f4bio/CasaOS-AppStore@develop/Apps/Bitcoind/thumbnail.png
+  title:
+    en_us: Bitcoind
+  category: Utilities
+  port_map: "58080"
