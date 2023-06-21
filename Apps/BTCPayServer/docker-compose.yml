@@ -113,7 +113,7 @@ services:
       - 43782
       - 39388
     volumes:
-      - /DATA/media/blockchains/bitcoin:/data
+      - bitcoin_wallet_datadir:/data
       - bitcoin_wallet_datadir:/walletdata
       - tor_datadir:/home/tor/.tor
   nbxplorer:
@@ -134,7 +134,7 @@ services:
       NBXPLORER_BTCNODEENDPOINT: bitcoind:39388
     volumes:
       - nbxplorer_datadir:/datadir
-      - /DATA/media/blockchains/bitcoin:/root/.bitcoin
+      - bitcoin_wallet_datadir:/root/.bitcoin
   postgres:
     restart: unless-stopped
     image: btcpayserver/postgres:13.10
@@ -180,6 +180,12 @@ volumes:
       o: bind
       type: none
       device: /DATA/AppData/$AppID/btcpay_pluginsdir
+  bitcoin_datadir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/bitcoin_datadir
   bitcoin_wallet_datadir:
     driver: local
     driver_opts:
@@ -258,11 +264,11 @@ x-casaos:
   tagline:
     en_us: Accept Bitcoin payments. Free, open-source & self-hosted, Bitcoin payment processor.
   screenshot_link:
-    - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/BTCPayServer/home_screenshot.png
+    - https://cdn.jsdelivr.net/gh/f4bio/CasaOS-AppStore@develop/Apps/BTCPayServer/home_screenshot.png
   developer: BTCPayServer
   author: f4bio
-  icon: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/BTCPayServer/icon.png
-  thumbnail: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/BTCPayServer/thumbnail.png
+  icon: https://cdn.jsdelivr.net/gh/f4bio/CasaOS-AppStore@develop/Apps/BTCPayServer/icon.png
+  thumbnail: https://cdn.jsdelivr.net/gh/f4bio/CasaOS-AppStore@develop/Apps/BTCPayServer/thumbnail.png
   title:
     en_us: BTCPayServer
   category: Utilities
