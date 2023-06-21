@@ -1,4 +1,6 @@
 ---
+version: '3.9'
+
 name: btcpayserver
 services:
   nginx:
@@ -9,9 +11,7 @@ services:
       - 11180:80
       - 11443:443
     volumes:
-      - type: bind
-        source: /DATA/AppData/$AppID/nginx_conf
-        target: /etc/nginx/conf.d
+      - nginx_conf:/etc/nginx/conf.d
       - nginx_vhost:/etc/nginx/vhost.d
       - nginx_html:/usr/share/nginx/html
       - tor_servicesdir:/var/lib/tor/hidden_services
@@ -24,10 +24,8 @@ services:
       DEFAULT_HOST: none
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
-      - type: bind
-        source: /DATA/AppData/$AppID/nginx_conf
-        target: /etc/nginx/conf.d
+      - /DATA/AppData/$AppID/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
+      - nginx_conf:/etc/nginx/conf.d
       - nginx_vhost:/etc/nginx/vhost.d
       - nginx_html:/usr/share/nginx/html
       - tor_servicesdir:/var/lib/tor/hidden_services
@@ -78,7 +76,6 @@ services:
     volumes:
       - btcpay_datadir:/datadir
       - nbxplorer_datadir:/root/.nbxplorer
-      - /share/homes/admin/.ssh/authorized_keys:abc
       - btcpay_pluginsdir:/root/.btcpayserver/Plugins
       - clightning_bitcoin_datadir:/etc/clightning_bitcoin
       - clightning_bitcoin_spark:/etc/clightning_bitcoin_spark
@@ -121,7 +118,7 @@ services:
       - 43782
       - 39388
     volumes:
-      - bitcoin_datadir:/data
+      - /DATA/media/blockchains/bitcoin:/data
       - bitcoin_wallet_datadir:/walletdata
       - tor_datadir:/home/tor/.tor
     links:
@@ -146,7 +143,7 @@ services:
       - postgres
     volumes:
       - nbxplorer_datadir:/datadir
-      - bitcoin_datadir:/root/.bitcoin
+      - /DATA/media/blockchains/bitcoin:/root/.bitcoin
   clightning_bitcoin:
     image: btcpayserver/lightning:v23.02-1
     container_name: btcpayserver_clightning_bitcoin
@@ -171,7 +168,7 @@ services:
       LIGHTNINGD_HIDDENSERVICE_HOSTNAME_FILE: /var/lib/tor/hidden_services/c-lightning/hostname
     volumes:
       - clightning_bitcoin_datadir:/root/.lightning
-      - bitcoin_datadir:/etc/bitcoin
+      - /DATA/media/blockchains/bitcoin:/etc/bitcoin
       - nbxplorer_datadir:/root/.nbxplorer
       - tor_servicesdir:/var/lib/tor/hidden_services
     ports:
@@ -219,7 +216,7 @@ services:
       - clightning_bitcoin
     volumes:
       - clightning_bitcoin_datadir:/root/.lightning
-      - bitcoin_datadir:/etc/bitcoin
+      - /DATA/media/blockchains/bitcoin:/etc/bitcoin
       - clightning_bitcoin_rest_certsdir:/usr/src/app/certs
       - nbxplorer_datadir:/root/.nbxplorer
     expose:
@@ -239,7 +236,7 @@ services:
       LOGOUT_REDIRECT_LINK: /server/services
     volumes:
       - clightning_bitcoin_datadir:/root/.lightning
-      - bitcoin_datadir:/etc/bitcoin
+      - /DATA/media/blockchains/bitcoin:/etc/bitcoin
       - clightning_bitcoin_rtl_datadir:/data
       - clightning_bitcoin_rest_certsdir:/etc/clightning_bitcoin_rest_certs
     expose:
@@ -266,7 +263,7 @@ services:
     container_name: tor-gen
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./torrc.tmpl:/etc/docker-gen/templates/torrc.tmpl:ro
+      - /share/media/_btcpayserver/torrc.tmpl:/etc/docker-gen/templates/torrc.tmpl:ro
       - tor_torrcdir:/usr/local/etc/tor
     entrypoint: /usr/local/bin/docker-gen -notify-sighup tor -watch -wait 5s:30s /etc/docker-gen/templates/torrc.tmpl /usr/local/etc/tor/torrc-2
     links:
@@ -277,12 +274,7 @@ services:
     container_name: letsencrypt-nginx-proxy-companion
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - type: bind
-        source: /DATA/AppData/$AppID/nginx_conf
-        target: /etc/nginx/conf.d
-      - type: bind
-        source: /DATA
-        target: /DATA
+      - nginx_conf:/etc/nginx/conf.d
       - nginx_vhost:/etc/nginx/vhost.d
       - nginx_html:/usr/share/nginx/html
       - nginx_certs:/etc/nginx/certs:rw
@@ -301,12 +293,12 @@ services:
     volumes:
       - postgres_datadir:/var/lib/postgresql/data
 volumes:
+  nginx_conf:
   nginx_vhost:
   nginx_html:
   nginx_certs:
   btcpay_datadir:
   btcpay_pluginsdir:
-  bitcoin_datadir:
   bitcoin_wallet_datadir:
   clightning_bitcoin_datadir:
   clightning_bitcoin_spark:
