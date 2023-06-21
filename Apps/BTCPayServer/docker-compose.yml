@@ -9,7 +9,9 @@ services:
       - 11180:80
       - 11443:443
     volumes:
-      - nginx_conf:/etc/nginx/conf.d
+      - type: bind
+        source: /DATA/AppData/$AppID/nginx_conf
+        target: /etc/nginx/conf.d
       - nginx_vhost:/etc/nginx/vhost.d
       - nginx_html:/usr/share/nginx/html
       - tor_servicesdir:/var/lib/tor/hidden_services
@@ -23,7 +25,9 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
-      - nginx_conf:/etc/nginx/conf.d
+      - type: bind
+        source: /DATA/AppData/$AppID/nginx_conf
+        target: /etc/nginx/conf.d
       - nginx_vhost:/etc/nginx/vhost.d
       - nginx_html:/usr/share/nginx/html
       - tor_servicesdir:/var/lib/tor/hidden_services
@@ -273,7 +277,12 @@ services:
     container_name: letsencrypt-nginx-proxy-companion
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - nginx_conf:/etc/nginx/conf.d
+      - type: bind
+        source: /DATA/AppData/$AppID/nginx_conf
+        target: /etc/nginx/conf.d
+      - type: bind
+        source: /DATA
+        target: /DATA
       - nginx_vhost:/etc/nginx/vhost.d
       - nginx_html:/usr/share/nginx/html
       - nginx_certs:/etc/nginx/certs:rw
@@ -292,7 +301,6 @@ services:
     volumes:
       - postgres_datadir:/var/lib/postgresql/data
 volumes:
-  nginx_conf:
   nginx_vhost:
   nginx_html:
   nginx_certs:
@@ -322,11 +330,11 @@ x-casaos:
   tagline:
     en_us: Accept Bitcoin payments. Free, open-source & self-hosted, Bitcoin payment processor.
   screenshot_link:
-    - ./home_screenshot.png
+    - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/BTCPayServer/home_screenshot.png
   developer: BTCPayServer
-  author: BTCPayServer
-  icon: ./icon.png
-  thumbnail: ./thumbnail.png
+  author: f4bio
+  icon: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/BTCPayServer/icon.png
+  thumbnail: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/BTCPayServer/thumbnail.png
   title:
     en_us: BTCPayServer
   category: Utilities
