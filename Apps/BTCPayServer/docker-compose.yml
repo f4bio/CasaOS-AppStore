@@ -24,7 +24,7 @@ services:
       DEFAULT_HOST: none
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - /DATA/AppData/$AppID/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
+      - nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
       - nginx_conf:/etc/nginx/conf.d
       - nginx_vhost:/etc/nginx/vhost.d
       - nginx_html:/usr/share/nginx/html
@@ -70,9 +70,6 @@ services:
       SSL_POLICY: Mozilla-Modern
       LETSENCRYPT_HOST: btcpay.example.com
       LETSENCRYPT_EMAIL: btcpay@example.com
-    links:
-      - postgres
-      - clightning_bitcoin
     volumes:
       - btcpay_datadir:/datadir
       - nbxplorer_datadir:/root/.nbxplorer
@@ -121,8 +118,6 @@ services:
       - /DATA/media/blockchains/bitcoin:/data
       - bitcoin_wallet_datadir:/walletdata
       - tor_datadir:/home/tor/.tor
-    links:
-      - tor
   nbxplorer:
     restart: unless-stopped
     image: nicolasdorier/nbxplorer:2.3.64
@@ -139,151 +134,9 @@ services:
       NBXPLORER_CHAINS: btc
       NBXPLORER_BTCRPCURL: http://bitcoind:43782/
       NBXPLORER_BTCNODEENDPOINT: bitcoind:39388
-    links:
-      - postgres
     volumes:
       - nbxplorer_datadir:/datadir
       - /DATA/media/blockchains/bitcoin:/root/.bitcoin
-  clightning_bitcoin:
-    image: btcpayserver/lightning:v23.02-1
-    container_name: btcpayserver_clightning_bitcoin
-    restart: unless-stopped
-    environment:
-      LIGHTNINGD_NETWORK: testnet
-      LIGHTNINGD_CHAIN: btc
-      LIGHTNINGD_ALIAS: abc
-      LIGHTNINGD_ANNOUNCEADDR: abc
-      LIGHTNINGD_PORT: 9735
-      LIGHTNINGD_READY_FILE: /root/.nbxplorer/btc_fully_synched
-      LIGHTNINGD_OPT: |
-        bitcoin-datadir=/etc/bitcoin
-        bitcoin-rpcconnect=bitcoind
-        experimental-offers
-        database-upgrade=true
-        rpc-file-mode=0666
-
-        proxy=tor:9050
-      HIDDENSERVICE_NAME: c-lightning
-      HIDDENSERVICE_PORT: 9735
-      LIGHTNINGD_HIDDENSERVICE_HOSTNAME_FILE: /var/lib/tor/hidden_services/c-lightning/hostname
-    volumes:
-      - clightning_bitcoin_datadir:/root/.lightning
-      - /DATA/media/blockchains/bitcoin:/etc/bitcoin
-      - nbxplorer_datadir:/root/.nbxplorer
-      - tor_servicesdir:/var/lib/tor/hidden_services
-    ports:
-      - 9735:9735
-    links:
-      - bitcoind
-      - tor
-  clightning_bitcoin_charge:
-    image: shesek/lightning-charge:0.4.23-1-standalone
-    restart: unless-stopped
-    environment:
-      NETWORK: testnet
-      COOKIE_FILE: /data/.cookie
-      URL: /lightning-charge/btc/
-      LN_NET_PATH: /etc/lightning
-      LN_NET: /etc/lightning
-    volumes:
-      - clightning_bitcoin_datadir:/etc/lightning
-      - clightning_bitcoin_charge:/data
-    expose:
-      - 9112
-    links:
-      - clightning_bitcoin
-  clightning_bitcoin_spark:
-    image: shesek/spark-wallet:0.3.1-standalone
-    restart: unless-stopped
-    environment:
-      NETWORK: testnet
-      SPARK_OPT: --no-tls -C /data/.cookie
-    volumes:
-      - clightning_bitcoin_datadir:/etc/lightning
-      - clightning_bitcoin_spark:/data
-    links:
-      - clightning_bitcoin
-    expose:
-      - 9737
-  clightning_bitcoin_rest:
-    image: saubyk/c-lightning-rest:0.9.0
-    restart: unless-stopped
-    environment:
-      PROTOCOL: http
-      NODE: clightning_bitcoin:9835
-      LIGHTNINGD_READY_FILE: /root/.nbxplorer/btc_fully_synched
-    links:
-      - clightning_bitcoin
-    volumes:
-      - clightning_bitcoin_datadir:/root/.lightning
-      - /DATA/media/blockchains/bitcoin:/etc/bitcoin
-      - clightning_bitcoin_rest_certsdir:/usr/src/app/certs
-      - nbxplorer_datadir:/root/.nbxplorer
-    expose:
-      - 3001
-  bitcoin_rtl:
-    image: shahanafarooqui/rtl:0.13.3
-    restart: unless-stopped
-    environment:
-      LN_IMPLEMENTATION: CLN
-      CONFIG_PATH: /root/.lightning/config
-      LN_SERVER_URL: http://clightning_bitcoin_rest:3001/v1
-      MACAROON_PATH: /etc/clightning_bitcoin_rest_certs
-      RTL_CONFIG_PATH: /data/
-      BITCOIND_CONFIG_PATH: /etc/bitcoin/bitcoin.conf
-      RTL_SSO: 1
-      RTL_COOKIE_PATH: /data/.cookie
-      LOGOUT_REDIRECT_LINK: /server/services
-    volumes:
-      - clightning_bitcoin_datadir:/root/.lightning
-      - /DATA/media/blockchains/bitcoin:/etc/bitcoin
-      - clightning_bitcoin_rtl_datadir:/data
-      - clightning_bitcoin_rest_certsdir:/etc/clightning_bitcoin_rest_certs
-    expose:
-      - 3000
-  tor:
-    restart: unless-stopped
-    image: btcpayserver/tor:0.4.7.10
-    container_name: tor
-    environment:
-      TOR_PASSWORD: btcpayserver
-      TOR_ADDITIONAL_CONFIG: /usr/local/etc/tor/torrc-2
-      TOR_EXTRA_ARGS: |
-        CookieAuthentication 1
-    expose:
-      - 9050
-      - 9051
-    volumes:
-      - tor_datadir:/home/tor/.tor
-      - tor_torrcdir:/usr/local/etc/tor
-      - tor_servicesdir:/var/lib/tor/hidden_services
-  tor-gen:
-    restart: unless-stopped
-    image: btcpayserver/docker-gen:0.7.8
-    container_name: tor-gen
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - /share/media/_btcpayserver/torrc.tmpl:/etc/docker-gen/templates/torrc.tmpl:ro
-      - tor_torrcdir:/usr/local/etc/tor
-    entrypoint: /usr/local/bin/docker-gen -notify-sighup tor -watch -wait 5s:30s /etc/docker-gen/templates/torrc.tmpl /usr/local/etc/tor/torrc-2
-    links:
-      - tor
-  letsencrypt-nginx-proxy-companion:
-    restart: unless-stopped
-    image: btcpayserver/letsencrypt-nginx-proxy-companion:1.12.2
-    container_name: letsencrypt-nginx-proxy-companion
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - nginx_conf:/etc/nginx/conf.d
-      - nginx_vhost:/etc/nginx/vhost.d
-      - nginx_html:/usr/share/nginx/html
-      - nginx_certs:/etc/nginx/certs:rw
-    environment:
-      NGINX_DOCKER_GEN_CONTAINER: nginx-gen
-      NGINX_PROXY_CONTAINER: nginx
-      ACME_CA_URI: production
-    links:
-      - nginx-gen
   postgres:
     restart: unless-stopped
     image: btcpayserver/postgres:13.10
@@ -294,22 +147,107 @@ services:
       - postgres_datadir:/var/lib/postgresql/data
 volumes:
   nginx_conf:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/nginx_conf
   nginx_vhost:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/nginx_vhost
   nginx_html:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/nginx_html
   nginx_certs:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/nginx_certs
   btcpay_datadir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/btcpay_datadir
   btcpay_pluginsdir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/btcpay_pluginsdir
   bitcoin_wallet_datadir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/bitcoin_wallet_datadir
   clightning_bitcoin_datadir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/clightning_bitcoin_datadir
   clightning_bitcoin_spark:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/clightning_bitcoin_spark
   clightning_bitcoin_charge:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/clightning_bitcoin_charge
   clightning_bitcoin_rtl_datadir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/clightning_bitcoin_rtl_datadir
   clightning_bitcoin_rest_certsdir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/clightning_bitcoin_rest_certsdir
   tor_datadir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/tor_datadir
   tor_torrcdir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/tor_torrcdir
   tor_servicesdir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/tor_servicesdir
   nbxplorer_datadir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/nbxplorer_datadir
   postgres_datadir:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /DATA/AppData/$AppID/postgres_datadir
 
 x-casaos:
   architectures:
@@ -330,4 +268,4 @@ x-casaos:
   title:
     en_us: BTCPayServer
   category: Utilities
-  port_map: 80
+  port_map: "80"
