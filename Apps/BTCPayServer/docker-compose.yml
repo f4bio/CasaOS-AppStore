@@ -24,19 +24,17 @@ services:
       DEFAULT_HOST: none
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
+      - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
       - nginx_conf:/etc/nginx/conf.d
       - nginx_vhost:/etc/nginx/vhost.d
       - nginx_html:/usr/share/nginx/html
       - tor_servicesdir:/var/lib/tor/hidden_services
       - nginx_certs:/etc/nginx/certs:ro
-    entrypoint: /usr/local/bin/docker-gen -notify-sighup nginx -watch -wait 5s:30s /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
-    links:
-      - btcpayserver
-      - nginx
+    entrypoint: /usr/local/bin/docker-gen -notify-sighup nginx -watch -wait 5s:30s nginx.tmpl /etc/nginx/conf.d/default.conf
   btcpayserver:
     restart: unless-stopped
     image: btcpayserver/btcpayserver:1.10.2
+    container_name: btcpayserver
     expose:
       - 49392
     environment:
