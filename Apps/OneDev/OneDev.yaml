@@ -1,0 +1,44 @@
+name: onedev
+services:
+  main_app:
+    cpu_shares: 50
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    image: 1dev/server:latest
+    labels:
+      icon: https://avatars.githubusercontent.com/u/44279871
+    ports:
+      - target: 6610
+        published: "6610"
+        protocol: tcp
+      - target: 6611
+        published: "6611"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+      - type: bind
+        source: /DATA/AppData/$AppID/
+        target: /opt/onedev
+    devices: []
+    cap_add: []
+    command: []
+    environment: []
+    network_mode: bridge
+    privileged: false
+    container_name: ""
+x-casaos:
+  author: self
+  category: self
+  hostname: ""
+  icon: https://avatars.githubusercontent.com/u/44279871
+  index: /
+  port_map: "6610"
+  scheme: http
+  store_app_id: onedev
+  title:
+    custom: OneDev
