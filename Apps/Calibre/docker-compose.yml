@@ -1,0 +1,86 @@
+---
+name: calibre
+services:
+  app:
+    environment:
+      DOCKER_MODS: linuxserver/mods:universal-calibre
+      PGID: $PGID
+      PUID: $PUID
+      TZ: $TZ
+    image: linuxserver/calibre:latest
+    deploy:
+      resources:
+        reservations:
+          memory: 64M
+    network_mode: bridge
+    ports:
+      - "8081:8081"
+      - "8080"
+      - "8181"
+    devices:
+      - /dev/dri:/dev/dri
+    restart: unless-stopped
+    volumes:
+      - /DATA/AppData/$AppID/config:/config
+      - /DATA/Media/Books:/books
+    x-casaos:
+      envs:
+        - container: PUID
+          description:
+            en_us: ""
+        - container: PGID
+          description:
+            en_us: ""
+        - container: TZ
+          description:
+            en_us: ""
+        - container: DOCKER_MODS
+          description:
+            en_us: ""
+      ports:
+        - container: "8081"
+          description: 
+            en_us: "Calibre webserver gui."
+        - container: "8080"
+          description: 
+            en_us: "Calibre desktop gui."
+        - container: "8181"
+          description: 
+            en_us: "Calibre desktop gui HTTPS."
+      volumes:
+        - container: /config
+          description:
+            en_us: ""
+        - container: /books
+          description:
+            en_us: ""
+    container_name: calibre
+x-casaos:
+  architectures:
+    - amd64
+    - arm
+    - arm64
+  main: calibre
+  author: f4bio
+  category: Media
+  description:
+    en_us: Calibre is a powerful and easy to use e-book manager. Users say it's outstanding and a must-have. It'll allow you to do nearly everything and it takes things a step beyond normal e-book software. It's also completely free and open source and great for both casual users and computer experts.
+  developer: linuxserver
+  icon: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Calibre/icon.png
+  screenshot_link:
+    - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Calibre/screenshot-1.png
+    - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Calibre/screenshot-2.png
+    - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Calibre/screenshot-3.png
+  tagline:
+    en_us: Calibre is the one stop solution to all your e-book needs.
+  thumbnail: 'https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Calibre/thumbnail.png'
+  tips:
+    before_install:
+      en_us: |
+        | Username | Password |
+        | -------- | -------- |
+        | `admin`    | `admin123` |
+  title:
+    en_us: Calibre
+  index: /
+  port_map: "8081"
