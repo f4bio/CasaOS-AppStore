@@ -14,15 +14,25 @@ services:
           memory: 64M
     network_mode: bridge
     ports:
-      - "8081:8081"
-      - "8080"
-      - "8181"
-    devices:
-      - /dev/dri:/dev/dri
+      - target: 8081
+        published: "8081"
+        protocol: tcp
+      - target: 8080
+        published: ""
+        protocol: tcp
+      - target: 8181
+        published: ""
+        protocol: tcp
+    # devices:
+    #   - /dev/dri:/dev/dri
     restart: unless-stopped
     volumes:
-      - /DATA/AppData/$AppID/config:/config
-      - /DATA/Media/Books:/books
+      - type: bind
+        source: /DATA/AppData/$AppID/config
+        target: /config
+      - type: bind
+        source: /DATA/Media/Books
+        target: /books
     x-casaos:
       envs:
         - container: PUID
@@ -60,7 +70,7 @@ x-casaos:
     - amd64
     - arm
     - arm64
-  main: calibre
+  main: app
   author: f4bio
   category: Media
   description:
