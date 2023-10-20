@@ -1,14 +1,11 @@
 name: tailscale
 services:
-  app:
+  tailscale:
     cap_add:
       - NET_ADMIN
       - NET_RAW
     container_name: tailscale
     environment:
-      - PGID=$PGID
-      - PUID=$PUID
-      - TZ=$TZ
       - TS_ACCEPT_DNS=$TS_ACCEPT_DNS
       - TS_AUTHKEY=$TS_AUTHKEY
       - TS_EXTRA_ARGS=$TS_EXTRA_ARGS
@@ -30,7 +27,7 @@ services:
             en_us: Accept DNS configuration from the admin console. Not accepted by default.
         - container: TS_AUTHKEY
           description:
-            en_us: An auth key used to authenticate the container. This is equivalent to what you’d pass to tailscale login --authkey=.
+            en_us: An auth key used to authenticate the container. This is equivalent to what you'd pass to tailscale login --authkey=.
         - container: TS_EXTRA_ARGS
           description:
             en_us: Any other flags to pass in to the Tailscale CLI in a tailscale set command.
@@ -38,7 +35,7 @@ x-casaos:
   architectures:
     - amd64
     - arm64
-  main: app
+  main: tailscale
   description:
     en_us:  Tailscale connects your team's devices and development environments for easy access to remote resources.
   tagline:
