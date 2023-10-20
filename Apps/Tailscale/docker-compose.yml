@@ -1,0 +1,54 @@
+name: tailscale
+services:
+  app:
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    container_name: tailscale
+    environment:
+      - PGID=$PGID
+      - PUID=$PUID
+      - TZ=$TZ
+      - TS_ACCEPT_DNS=$TS_ACCEPT_DNS
+      - TS_AUTHKEY=$TS_AUTHKEY
+      - TS_EXTRA_ARGS=$TS_EXTRA_ARGS
+    image: tailscale/tailscale:latest
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /dev/net/tun
+        target: /dev/net/tun
+      - type: bind
+        source: /var/lib
+        target: /var/lib
+    network_mode: host
+    x-casaos:
+      envs:
+        - container: TS_ACCEPT_DNS
+          description:
+            en_us: Accept DNS configuration from the admin console. Not accepted by default.
+        - container: TS_AUTHKEY
+          description:
+            en_us: An auth key used to authenticate the container. This is equivalent to what you’d pass to tailscale login --authkey=.
+        - container: TS_EXTRA_ARGS
+          description:
+            en_us: Any other flags to pass in to the Tailscale CLI in a tailscale set command.
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+  main: app
+  description:
+    en_us:  Tailscale connects your team's devices and development environments for easy access to remote resources.
+  tagline:
+    en_us: Secure remote access to shared resources
+  developer: tailscale
+  icon: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Tailscale/icon.png
+  screenshot_link:
+    - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Tailscale/screenshot-1.png
+    - https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Tailscale/screenshot-2.png
+  author: Fabio Tea
+  category: Network
+  title:
+    en_us: Tailscale
