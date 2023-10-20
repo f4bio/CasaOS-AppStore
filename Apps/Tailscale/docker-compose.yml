@@ -8,6 +8,7 @@ services:
     environment:
       - TS_ACCEPT_DNS=$TS_ACCEPT_DNS
       - TS_AUTHKEY=$TS_AUTHKEY
+      - TS_HOSTNAME=$TS_HOSTNAME
       - TS_EXTRA_ARGS=$TS_EXTRA_ARGS
     image: tailscale/tailscale:latest
     privileged: true
@@ -28,6 +29,9 @@ services:
         - container: TS_AUTHKEY
           description:
             en_us: An auth key used to authenticate the container. This is equivalent to what you'd pass to tailscale login --authkey=.
+        - container: TS_HOSTNAME
+          description:
+            en_us: Use the specified hostname for the node. This is equivalent to tailscale set --hostname=.
         - container: TS_EXTRA_ARGS
           description:
             en_us: Any other flags to pass in to the Tailscale CLI in a tailscale set command.
